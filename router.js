@@ -24,7 +24,7 @@ function pokormit(message, data, selfMybot) {
     usersData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
     console.log(usersData);
     var userId = "" + data.from.id;
-    var stickerName = "test9" + userId + "_by_kakakaFriendBot";
+    var stickerName = "test10" + userId + "_by_kakakaFriendBot";
     var title = "" + stickerName;
     var stickerId = usersData[userId]['stickerId']
     //console.log(usersData[userId][rank])
@@ -36,6 +36,7 @@ function pokormit(message, data, selfMybot) {
             selfMybot.getStickerSet(stickerName).then((stickerObj) => {
                 var stickerId = stickerObj.stickers[stickerObj.stickers.length-1].file_id
                 selfMybot.sendSticker(data.chat.id, stickerId)
+                selfMybot.sendMessage(data.chat.id,'МММММ, как вкусно, теперь мой уровень '+rank+' . Корми меня дальше чтобы я рос /pokormit')
                 usersData[userId] = { 'rank': rank, 'stickerId': stickerId }
                 json = JSON.stringify(usersData);
                 fs.writeFile(dataPath, json, 'utf8', function (err) {
@@ -54,7 +55,7 @@ function start(message, data, selfMybot) {
     usersData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
     console.log(usersData)
     var userId = "" + data.from.id;
-    var stickerName = "test9" + userId + "_by_kakakaFriendBot";
+    var stickerName = "test10" + userId + "_by_kakakaFriendBot";
     var stickerNameTemp = stickerName
     var title = "" + stickerName;
     if (!usersData[userId]) {
@@ -70,6 +71,7 @@ function start(message, data, selfMybot) {
                 console.log(stickerObj)
                 var stickerId = stickerObj.stickers[0].file_id
                 selfMybot.sendSticker(data.chat.id, stickerId)
+                selfMybot.sendMessage(data.chat.id,'Привет,я твой новый друг и ты меня найдешь в этом стикер паке. Чтобы покормить меня отправь /pokormit')
                 usersData[userId] = { 'rank': 0, 'stickerId': stickerId }
                 json = JSON.stringify(usersData); //convert it back to json
                 fs.writeFile(dataPath, json, 'utf8', function (err) {
