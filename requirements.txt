@@ -1,0 +1,5 @@
+|--user_id
+    |--isSticker
+    |--sticker_id
+    |--rank
+    |--
