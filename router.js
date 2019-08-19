@@ -15,6 +15,9 @@ module.exports.messageRouter = function messageRouter(message, data, selfMybot) 
         case '/pokormit':
             pokormit(message, data, selfMybot)
             break;
+        case '/adminSendMessageAll':
+            adminSendMessageAll(message, data, selfMybot)
+            break;
     }
 }
 function pokormit(message, data, selfMybot) {
@@ -84,4 +87,14 @@ function start(message, data, selfMybot) {
     } else { console.log('этот пользователь уже стартанул') }
     //console.log(usersData)
 
+}
+
+function adminSendMessageAll(message, data, selfMybot){
+    var dataPath = __dirname + "\\sendingData.json"
+    usersData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+    var usersArr = usersData.arr;
+    for(i=0;i<usersArr.length;i++){
+        console.log(usersArr[i])
+        selfMybot.sendMessage(usersArr[i],'Привет,давай играть!, пришли мне /start')
+    }
 }
