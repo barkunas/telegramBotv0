@@ -15,8 +15,11 @@ module.exports.messageRouter = function messageRouter(message, data, selfMybot) 
         case '/pokormit':
             pokormit(message, data, selfMybot)
             break;
-        case '/adminSendMessageAll':
+        case '/adminSendMessageAllGeneral':
             adminSendMessageAll(message, data, selfMybot)
+            break;
+        case '/adminUpdateDataJson':
+            adminUpdateDataJson(message, data, selfMybot)
             break;
     }
 }
@@ -37,8 +40,12 @@ function pokormit(message, data, selfMybot) {
         var img = fs.createReadStream(__dirname + '\\images' + '\\' + rank + '.png');
         selfMybot.addStickerToSet(botId, stickerName, img, "😂").then(() => {
             selfMybot.getStickerSet(stickerName).then((stickerObj) => {
+                var stickerInTrash = stickerObj.stickers[0].file_id
                 var stickerId = stickerObj.stickers[stickerObj.stickers.length-1].file_id
-                selfMybot.sendSticker(data.chat.id, stickerId)
+                
+                selfMybot.sendSticker(data.chat.id, stickerId).then(()=>{
+                    selfMybot.deleteStickerFromSet(stickerInTrash)
+                })
                 selfMybot.sendMessage(data.chat.id,'МММММ, как вкусно, теперь мой уровень '+rank+' . Корми меня дальше чтобы я рос /pokormit')
                 usersData[userId] = { 'rank': rank, 'stickerId': stickerId }
                 json = JSON.stringify(usersData);
@@ -48,7 +55,7 @@ function pokormit(message, data, selfMybot) {
                 })
             },(err)=>(console.log(err)))
         }, (err) => console.log(err));
-    }
+    } else selfMybot.sendMessage(data.chat.id,'Спасибо, но я уже наелся😐')
 }
 
 function start(message, data, selfMybot) {
@@ -90,11 +97,41 @@ function start(message, data, selfMybot) {
 }
 
 function adminSendMessageAll(message, data, selfMybot){
-    var dataPath = __dirname + "\\sendingData.json"
-    usersData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
-    var usersArr = usersData.arr;
-    for(i=0;i<usersArr.length;i++){
-        console.log(usersArr[i])
-        selfMybot.sendMessage(usersArr[i],'Привет,давай играть!, пришли мне /start')
+    var dataPath = __dirname + "\\data.json"
+    var usersData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+    var text = fs.readFileSync(__dirname+"\\text.txt", 'utf8')
+    //var usersArr = usersData.arr;
+    for(e in usersData){
+        console.log('send to '+e + '||text: ' +text)
+        selfMybot.sendMessage(e,text)
     }
+}
+
+function adminUpdateDataJson(message, data, selfMybot){
+    var botId = '976224147'
+    var stickerArr = [];
+    var dataPath = __dirname + "\\data.json"
+    var usersData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+    for(user in usersData){
+        var stickerName = "test10" + user + "_by_kakakaFriendBot";
+        var rank = usersData[user]['rank'];
+        console.log('уровень пользователя' + rank);
+        var img = fs.createReadStream(__dirname + '\\images' + '\\' + rank + '.png');
+        selfMybot.addStickerToSet(botId, stickerName, img, "😂").then(() => {
+            selfMybot.getStickerSet(stickerName).then((stickerObj) => {
+                var stickerId = stickerObj.stickers[stickerObj.stickers.length-1].file_id
+                //selfMybot.sendSticker(data.chat.id, stickerId)
+                //selfMybot.sendMessage(data.chat.id,'МММММ, как вкусно, теперь мой уровень '+rank+' . Корми меня дальше чтобы я рос /pokormit')
+                usersData[user] = { 'rank': rank, 'stickerId': stickerId }
+                json = JSON.stringify(usersData);
+                fs.writeFile(dataPath, json, 'utf8', function (err) {
+                    if (err) throw err;
+                    console.log('complete');
+                })
+            },(err)=>(console.log(err)))
+        }, (err) => console.log(err));
+    
+    }
+    
+    
 }
