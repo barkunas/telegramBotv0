@@ -1,4 +1,9 @@
 //module.exports.usersData = usersData
+var apiai = require('apiai');
+
+var appAI = apiai("35c8ee44b0e04700bcf9b6d8c7efa7c1");
+
+
 const fs = require('fs');
 
 
@@ -16,6 +21,7 @@ module.exports.messageRouter = function messageRouter(message, data, selfMybot) 
             pokormit(message, data, selfMybot)
             break;
         case '/adminSendMessageAllGeneral':
+            //console.log('стартуем рассылку сообщений всем')
             adminSendMessageAll(message, data, selfMybot)
             break;
         case '/adminUpdateDataJsonOld':
@@ -27,9 +33,16 @@ module.exports.messageRouter = function messageRouter(message, data, selfMybot) 
         case '/adminObosratsaAllUsers':
             adminObosratsaAllUsers(message, data, selfMybot)
             break;
+        case '/adminObosratsaUsers':
+            adminObosratsaUsers(message, data, selfMybot)
+            break;
         case '/ubrat':
             ubratZaKotom(message, data, selfMybot)
             break;
+        case '/adminPingAllWhoObosralsa':
+            adminPingAllWhoObosralsa(message, data, selfMybot)
+            break;
+        default: AIMessageRouter(message, data, selfMybot)
     }
 }
 function pokormit(message, data, selfMybot) {
@@ -118,7 +131,7 @@ function start(message, data, selfMybot) {
 function adminSendMessageAll(message, data, selfMybot) {
     var dataPath = __dirname + "\\data.json"
     var usersData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
-    var text = fs.readFileSync(__dirname + "\\text.txt", 'utf8')
+    var text = "Сладких снов!️️️️💋💋💋"
     //var usersArr = usersData.arr;
     for (e in usersData) {
         console.log('send to ' + e + '||text: ' + text)
@@ -178,7 +191,45 @@ function adminUpdateUserData(message, data, selfMybot) {
         })
     }, 10000)
 }
+function adminObosratsaUsers(message, data, selfMybot) {
+    var user = data.chat.id;
+    var dataPath = __dirname + "\\data.json"
+    var usersData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+    var userObj = usersData[user];
+    var botId = '976224147'
+    
+    let stickerId = userObj['stickerId']
+    let stickerSetName = "test10" + user + "_by_kakakaFriendBot";
+    
+    
+    if (!userObj.hasOwnProperty('isObosralsa')) { userObj['isObosralsa'] = false }
+    if (!userObj['isObosralsa'] && userObj.rank > 3) {
+        usersData[user]['rank'] = usersData[user]['rank'] - 3
+        usersData[user]['isObosralsa'] = true;
+        var img = fs.createReadStream(__dirname + '\\images' + '\\pokakal.png');
+        selfMybot.addStickerToSet(botId, stickerSetName, img, "😂").then(() => {
+            selfMybot.getStickerSet(stickerSetName).then((stickerObj) => {
+                var stickerInTrash = stickerObj.stickers[0].file_id
+                var stickerId = stickerObj.stickers[stickerObj.stickers.length - 1].file_id
 
+                selfMybot.sendSticker(user, stickerId).then(() => {
+                    selfMybot.deleteStickerFromSet(stickerInTrash)
+                })
+                selfMybot.sendMessage(user, 'ОЙ, оёёй, оно само!(((💩💩💩 Настроение персонажа -3. /ubrat')
+                //usersData[userId] = { 'rank': rank, 'stickerId': stickerId }
+
+            }, (err) => (console.log(err)))
+        }, (err) => console.log(err));
+    }
+    setTimeout(function () {
+        json = JSON.stringify(usersData)
+        fs.writeFile(dataPath, json, 'utf8', function (err) {
+            if (err) throw err;
+            console.log('pokakali vse');
+        })
+    }, 5000)
+
+}
 function adminObosratsaAllUsers(message, data, selfMybot) {
     var botId = '976224147'
     var dataPath = __dirname + "\\data.json"
@@ -193,7 +244,7 @@ function adminObosratsaAllUsers(message, data, selfMybot) {
         if (!userObj.hasOwnProperty('isObosralsa')) { userObj['isObosralsa'] = false }
 
         if (!userObj['isObosralsa'] && userObj.rank > 3) {
-            usersData['rank'] = usersData['rank'] - 3
+            usersData[user]['rank'] = usersData[user]['rank'] - 3
             usersData[user]['isObosralsa'] = true;
             var img = fs.createReadStream(__dirname + '\\images' + '\\pokakal.png');
             selfMybot.addStickerToSet(botId, stickerSetName, img, "😂").then(() => {
@@ -216,10 +267,10 @@ function adminObosratsaAllUsers(message, data, selfMybot) {
                 if (err) throw err;
                 console.log('pokakali vse');
             })
-        },5000)
+        }, 5000)
     }
 }
-function ubratZaKotom(message, data, selfMybot){
+function ubratZaKotom(message, data, selfMybot) {
     var botId = '976224147'
     var dataPath = __dirname + "\\data.json";
     var usersData;
@@ -251,4 +302,37 @@ function ubratZaKotom(message, data, selfMybot){
             }, (err) => (console.log(err)))
         }, (err) => console.log(err));
     } else selfMybot.sendMessage(data.chat.id, '😡Что ты собрался тут убирать?????😡😡😡 Тут всегда только одни бабочки и пахнет радугой')
+}
+function adminPingAllWhoObosralsa(message, data, selfMybot) {
+
+    var dataPath = __dirname + "\\data.json"
+    var usersData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+    var text = 'Ты у себя дома тоже не убираешь? Тут очень сильно воняет. Уберись за мной пожалуйста /ubrat'
+    //var usersArr = usersData.arr;
+    for (e in usersData) {
+        if (usersData[e]['isObosralsa']) {
+            console.log('send to ' + e + '||text: ' + text)
+            selfMybot.sendMessage(e, text)
+        }
+    }
+
+}
+
+function AIMessageRouter(message, data, selfMybot) {
+    var user = data.chat.id;
+    var request = appAI.textRequest(message, {
+        sessionId: '' + user
+    });
+
+    request.on('response', function (response) {
+        var textMsg = response.result.fulfillment.speech
+        selfMybot.sendMessage(user, ' ' + textMsg)
+        console.log(textMsg + '||ИИ||user is ' + user);
+    });
+
+    request.on('error', function (error) {
+        console.log(error);
+    });
+
+    request.end();
 }
